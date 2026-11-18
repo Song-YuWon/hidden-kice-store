@@ -4,8 +4,8 @@ Figma 디자인("히든카이스 교재 스토어 목록 페이지", node `1:186
 교재 스토어 목록 페이지입니다. Next.js + Supabase로 상품 목록을 CSR로 불러와
 검색 / 필터 / 페이지네이션을 제공합니다.
 
-- 배포 URL: _(Vercel 배포 후 채워집니다)_
-- GitHub: _(push 후 채워집니다)_
+- 배포 URL: https://hidden-kice-store-fawn.vercel.app
+- GitHub: https://github.com/Song-YuWon/hidden-kice-store
 
 ## 실행 방법
 
