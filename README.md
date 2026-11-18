@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 히든카이스 교재 스토어 (신입사원 채용 과제)
 
-## Getting Started
+Figma 디자인("히든카이스 교재 스토어 목록 페이지", node `1:186`)을 기반으로 구현한
+교재 스토어 목록 페이지입니다. Next.js + Supabase로 상품 목록을 CSR로 불러와
+검색 / 필터 / 페이지네이션을 제공합니다.
 
-First, run the development server:
+- 배포 URL: _(Vercel 배포 후 채워집니다)_
+- GitHub: _(push 후 채워집니다)_
+
+## 실행 방법
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # Supabase 프로젝트 URL / anon key 입력
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Supabase 테이블/정책/더미 데이터는 `supabase/schema.sql`에 정리되어 있습니다.
+새 Supabase 프로젝트의 SQL Editor에 그대로 붙여넣어 실행하면 이 프로젝트와
+동일한 상태로 재현할 수 있습니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build && npm run start   # 프로덕션 빌드 확인
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 기술 스택과 선택 이유
 
-## Learn More
+| 영역 | 선택 | 이유 |
+| --- | --- | --- |
+| 프레임워크 | Next.js 16 (App Router) | 과제 요구사항이 명시한 스택. 파일 기반 라우팅과 레이아웃 공유(GNB/Footer)를 그대로 활용. 이 페이지는 전부 CSR이라 서버 컴포넌트의 이점은 거의 없지만, 향후 다른 라우트(상품 상세, 마이페이지 등)에서 서버 렌더링이 필요할 때 전환 비용이 낮다는 점을 고려했습니다. |
+| 언어 | TypeScript | Supabase 응답 타입, 상품 필터 상태 등을 컴파일 타임에 검증하기 위해 사용했습니다. |
+| 스타일 | Tailwind CSS v4 | Figma MCP가 추출한 스타일(색상 hex, 폰트 크기 등)을 거의 그대로 유틸리티 클래스로 옮길 수 있어 디자인-코드 싱크 속도가 빠릅니다. `app/globals.css`의 `@theme`에 Figma 변수(`Color/primary/default` 등)를 디자인 토큰으로 등록해 재사용했습니다. |
+| 데이터 패칭 | TanStack Query | 검색어/필터/페이지가 바뀔 때마다 쿼리 키가 달라지는 구조라 캐싱·중복 요청 방지·로딩 상태 관리가 필요했습니다. `placeholderData: keepPreviousData`로 페이지 전환 시 깜빡임 없이 이전 데이터를 보여주다가 교체합니다. |
+| 데이터베이스 | Supabase (Postgres + PostgREST) | 별도 백엔드 서버 없이 RLS로 읽기 전용 공개 API를 만들 수 있어 "화면에 보이는 부분 위주"인 이번 과제 범위에 적합했습니다. |
+| 폰트 | Pretendard (npm 패키지) | Figma 디자인의 폰트가 Pretendard였고, Google Fonts에는 없어 npm 패키지의 정적 CSS를 `globals.css`에서 바로 import했습니다. |
 
-To learn more about Next.js, take a look at the following resources:
+## 폴더 구조
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/                      # 라우팅 전용: layout/page/providers만 둡니다.
+    layout.tsx              # 루트 레이아웃 (GNB, Footer, Providers 조립)
+    page.tsx                # "/" 페이지 (배너 + 상품 섹션 조립)
+    providers.tsx           # TanStack Query Provider
+    globals.css             # Tailwind, 디자인 토큰, 폰트
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+  features/
+    products/                # "상품" 도메인 전용 코드. 다른 도메인이 생기면
+      types/product.ts       # (예: features/cart, features/auth) 이 옆에 추가합니다.
+      api/getProducts.ts      # Supabase 쿼리 (검색/필터/페이지네이션)
+      hooks/useProducts.ts     # TanStack Query 훅
+      utils/price.ts           # 할인가 계산, 통화 포맷
+      components/
+        ProductsSection.tsx    # 검색/필터/페이지 상태를 들고 있는 컨테이너
+        SearchBar.tsx
+        FilterTabs.tsx
+        ProductGrid.tsx
+        ProductCard.tsx
+        Pagination.tsx
 
-## Deploy on Vercel
+  shared/
+    layout/                  # 여러 페이지에서 재사용되는 레이아웃 조각
+      Gnb.tsx
+      PromoBanner.tsx
+      Footer.tsx
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  lib/
+    supabase/client.ts        # Supabase 클라이언트 싱글턴
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+supabase/
+  schema.sql                 # 테이블/RLS/더미 데이터 (재현용)
+```
+
+**왜 feature 단위로 나눴나요?**
+현재는 상품 도메인 하나뿐이지만, 과제에서 요구한 "확장 가능한 구조"를 고려해
+`app/`에는 라우팅과 조립 코드만 두고, 도메인 로직(API/훅/타입/컴포넌트)은
+`features/<domain>` 아래에 모았습니다. 장바구니·주문·인증 같은 도메인이
+추가되면 `features/cart`, `features/auth`처럼 같은 패턴으로 옆에 추가하면
+되고, 여러 도메인에서 함께 쓰는 GNB/Footer/버튼 같은 조각은 `shared/`에
+둡니다. `api/hooks/components/types`로 한 번 더 나눈 이유는, 리스트가
+길어졌을 때 "이 도메인의 서버 통신 코드가 어디 있는지" "UI가 어디 있는지"를
+파일명이 아니라 폴더만 보고 찾을 수 있게 하기 위해서입니다.
+
+## 주요 구현 결정
+
+- **검색/필터/페이지네이션을 서버(Supabase) 쿼리로 처리**: 더미 데이터가
+  30건이라 클라이언트에서 걸러도 체감 차이는 없지만, 실제 서비스에서는
+  상품이 수천~수만 건이 될 수 있으므로 `ilike`(검색), `eq`(필터),
+  `range` + `count: 'exact'`(페이지네이션)를 Supabase 쿼리 단계에서
+  적용해 "데이터 양이 늘어도 그대로 쓸 수 있는" 패턴을 선택했습니다.
+- **할인가는 저장하지 않고 계산**: `products` 테이블에는 정가(`price`)와
+  할인율(`discount_rate`)만 저장하고, 화면에 보여줄 할인가는
+  `getDiscountedPrice()`에서 매번 계산합니다. 정가/할인율 정책이 바뀌어도
+  데이터를 다시 채워 넣을 필요가 없습니다.
+- **RLS 읽기 전용 정책**: `anon`/`authenticated` 역할에 `SELECT` 정책만
+  부여하고 INSERT/UPDATE/DELETE 정책은 만들지 않았습니다. 익명 키가
+  브라우저에 노출되어도 데이터를 바꿀 수 없습니다.
+- **검색 디바운스(300ms)**: 입력할 때마다 요청을 보내지 않도록
+  `ProductsSection`에서 입력값과 실제 쿼리에 쓰는 값을 분리했습니다.
+- **로딩 / 에러 / 빈 상태**: 최초 로딩 시 카드 모양의 스켈레톤을 보여주고,
+  Supabase 요청이 실패하면 에러 메시지를, 검색 결과가 0건이면 안내 문구를
+  보여줍니다.
+- **프로모션 배너는 이미지 1장을 더미로 반복**: Figma에서 내보낼 수 있는
+  배너 이미지가 1장뿐이라 `SLIDES` 배열에 같은 경로를 5번 넣어 "1/5"
+  구조만 먼저 맞췄습니다. 실제 배너 이미지 4장만 추가하면 바로 동작하도록
+  슬라이드 배열과 렌더링 로직을 분리해뒀습니다.
+- **GNB 메뉴/장바구니·알림 아이콘은 정적**: Figma 주석에 "NAVBAR는 구조만"
+  이라고 명시되어 있어 클릭 동작 없이 구조와 스타일만 구현했습니다.
+
+## 시간 제약으로 생략/단순화한 부분
+
+- 데스크톱(1440px) 기준으로 작업했고, 2~3열까지는 반응형 그리드를 넣었지만
+  모바일 전용 레이아웃(GNB 햄버거 메뉴 등)은 만들지 않았습니다.
+- 장바구니/알림/로그인 아이콘, GNB 메뉴는 클릭해도 동작하지 않습니다
+  (디자인 주석에 따라 의도된 범위입니다).
+- 프로모션 배너는 이미지 1장을 반복 사용하며, 우측 하단 "N/5" 배지를
+  클릭하면 다음 슬라이드로 순환하는 정도만 구현했습니다.
