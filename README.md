@@ -142,6 +142,14 @@ supabase/
   테스트를 추가했습니다(`src/features/products/utils/price.test.ts`,
   `npm run test`). UI 전체를 테스트하기보다, 숫자가 틀리면 바로 눈에 띄는
   "돈 계산" 로직부터 우선순위를 두었습니다.
+- **Supabase 비활성화 방지용 핑**: Supabase 무료 플랜은 일주일 이상
+  활동이 없으면 프로젝트가 자동 일시정지됩니다. `/api/ping`이 Supabase에
+  가벼운 조회 쿼리를 보내도록 만들고, Vercel Cron(`vercel.json`, 하루 1회)과
+  GitHub Actions(`.github/workflows/keep-alive.yml`, 하루 2회)가 서로 다른
+  공급자에서 호출하도록 이중화했습니다. (이 과정에서 Vitest 설치 때 생긴
+  Windows 전용 네이티브 패키지가 `devDependencies`에 잘못 들어가 Vercel의
+  Linux 빌드가 `EBADPLATFORM`으로 계속 실패하던 걸 발견해 `optionalDependencies`로
+  옮겨 고쳤습니다 — 실제로 몇 개 커밋이 조용히 배포에 반영되지 않고 있었습니다.)
 
 ## 시간 제약으로 생략/단순화한 부분
 
