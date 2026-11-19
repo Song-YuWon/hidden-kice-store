@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 // Figma에서 내보낼 수 있는 배너 이미지가 1장뿐이라 더미로 5번 반복 사용합니다.
 // 슬라이드 이미지가 늘어나면 SLIDES 배열만 교체하면 되도록 렌더링 로직과 분리했습니다.
 const SLIDES = [
-  "/images/banner-1.png",
-  "/images/banner-1.png",
-  "/images/banner-1.png",
-  "/images/banner-1.png",
-  "/images/banner-1.png",
+  "/images/banner-1.webp",
+  "/images/banner-1.webp",
+  "/images/banner-1.webp",
+  "/images/banner-1.webp",
+  "/images/banner-1.webp",
 ];
 
 const AUTO_SLIDE_INTERVAL_MS = 4000;
