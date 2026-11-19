@@ -1,28 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { useProducts } from "../hooks/useProducts";
 import type { ProductFilter } from "../types/product";
 import { FilterTabs } from "./FilterTabs";
 import { Pagination } from "./Pagination";
 import { ProductGrid } from "./ProductGrid";
+import { ProductsSkeleton } from "./ProductsSkeleton";
 import { SearchBar } from "./SearchBar";
 
 const PAGE_SIZE = 12;
 const SEARCH_DEBOUNCE_MS = 300;
+const VALID_FILTERS: ProductFilter[] = ["전체", "패스", "단품"];
+
+function parseFilter(value: string | null): ProductFilter {
+  return (VALID_FILTERS as string[]).includes(value ?? "") ? (value as ProductFilter) : "전체";
+}
+
+function parsePage(value: string | null): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
 
 export function ProductsSection() {
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<ProductFilter>("전체");
-  const [page, setPage] = useState(1);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // 검색어/필터/페이지는 URL 쿼리스트링이 기준값입니다.
+  // 새로고침, 뒤로가기, 링크 공유를 해도 같은 화면이 다시 보이도록 하기 위해서입니다.
+  const search = searchParams.get("q") ?? "";
+  const filter = parseFilter(searchParams.get("filter"));
+  const page = parsePage(searchParams.get("page"));
+
+  const [searchInput, setSearchInput] = useState(search);
+
+  // URL의 검색어(뒤로가기 등으로 바뀐 경우)와 입력창 상태를 렌더 중에 동기화합니다.
+  // (useEffect에서 setState하면 리렌더가 한 번 더 발생해 React 공식 문서가 권장하지 않는 패턴입니다)
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setSearchInput(search);
+  }
+
+  const updateParams = useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, value] of Object.entries(updates)) {
+        if (value === null || value === "") {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      }
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSearch(searchInput);
-      setPage(1);
+      const trimmed = searchInput.trim();
+      if (trimmed !== search) {
+        updateParams({ q: trimmed || null, page: null });
+      }
     }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
 
   const { data, isLoading, isError, error } = useProducts({
@@ -33,8 +79,11 @@ export function ProductsSection() {
   });
 
   const handleFilterChange = (next: ProductFilter) => {
-    setFilter(next);
-    setPage(1);
+    updateParams({ filter: next === "전체" ? null : next, page: null });
+  };
+
+  const handlePageChange = (next: number) => {
+    updateParams({ page: next === 1 ? null : String(next) });
   };
 
   return (
@@ -53,16 +102,7 @@ export function ProductsSection() {
             </p>
           </div>
         ) : isLoading && !data ? (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-9 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-[93px]">
-            {Array.from({ length: PAGE_SIZE }).map((_, index) => (
-              <div key={index} className="flex animate-pulse flex-col gap-2">
-                <div className="h-[320px] w-full rounded-md bg-gray-50" />
-                <div className="h-4 w-16 rounded bg-gray-50" />
-                <div className="h-5 w-full rounded bg-gray-50" />
-                <div className="h-5 w-24 rounded bg-gray-50" />
-              </div>
-            ))}
-          </div>
+          <ProductsSkeleton count={PAGE_SIZE} />
         ) : data && data.items.length === 0 ? (
           <div className="flex min-h-[320px] flex-col items-center justify-center gap-2 text-gray-500">
             <p className="text-base font-semibold">검색 결과가 없습니다.</p>
@@ -77,7 +117,7 @@ export function ProductsSection() {
             page={page}
             pageSize={PAGE_SIZE}
             totalCount={data.totalCount}
-            onPageChange={setPage}
+            onPageChange={handlePageChange}
           />
         )}
       </div>
