@@ -1,0 +1,17 @@
+name: Keep Supabase alive
+
+# Vercel Cron(하루 1회, /api/ping)에 더해 하루 2번을 추가로 호출합니다.
+# 공급자를 분산해서 한쪽(Vercel 또는 GitHub Actions)에 문제가 생겨도
+# 다른 쪽이 Supabase 활동 기록을 남기도록 하기 위함입니다.
+on:
+  schedule:
+    - cron: "0 1 * * *"
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/ping
+        run: curl -fsS "https://hidden-kice-store-fawn.vercel.app/api/ping"
