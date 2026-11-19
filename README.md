@@ -21,6 +21,7 @@ Supabase 테이블/정책/더미 데이터는 `supabase/schema.sql`에 정리되
 
 ```bash
 npm run build && npm run start   # 프로덕션 빌드 확인
+npm run test                      # 유닛 테스트 (할인가 계산 로직)
 ```
 
 ## 기술 스택과 선택 이유
@@ -136,6 +137,11 @@ supabase/
 
   브라우저에 노출되는 키로는 조회만 가능하고 쓰기는 Postgres 레벨에서
   거부된다는 걸 실제 응답으로 확인했습니다.
+- **가격 계산 로직에 유닛 테스트 추가**: `getDiscountedPrice`/`formatKrw`는
+  입력과 출력이 분명한 순수 함수라 테스트 가치가 높다고 판단해 Vitest로
+  테스트를 추가했습니다(`src/features/products/utils/price.test.ts`,
+  `npm run test`). UI 전체를 테스트하기보다, 숫자가 틀리면 바로 눈에 띄는
+  "돈 계산" 로직부터 우선순위를 두었습니다.
 
 ## 시간 제약으로 생략/단순화한 부분
 
