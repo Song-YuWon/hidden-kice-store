@@ -31,7 +31,7 @@ export function Pagination({
         aria-label="이전 페이지"
         disabled={page === 1}
         onClick={() => onPageChange(page - 1)}
-        className="flex size-10 items-center justify-center rounded-md border border-primary bg-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex size-10 cursor-pointer items-center justify-center rounded-md border border-primary bg-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Image src="/icons/chevron-left.svg" alt="" width={20} height={20} />
       </button>
@@ -43,8 +43,8 @@ export function Pagination({
           aria-current={p === page ? "page" : undefined}
           className={
             p === page
-              ? "flex size-10 items-center justify-center rounded-md bg-primary text-sm font-medium text-white"
-              : "flex size-10 items-center justify-center rounded-md border border-primary text-sm font-medium text-primary"
+              ? "flex size-10 cursor-pointer items-center justify-center rounded-md bg-primary text-sm font-medium text-white"
+              : "flex size-10 cursor-pointer items-center justify-center rounded-md border border-primary text-sm font-medium text-primary"
           }
         >
           {p}
@@ -55,7 +55,7 @@ export function Pagination({
         aria-label="다음 페이지"
         disabled={page === totalPages}
         onClick={() => onPageChange(page + 1)}
-        className="flex size-10 items-center justify-center rounded-md border border-primary bg-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex size-10 cursor-pointer items-center justify-center rounded-md border border-primary bg-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Image src="/icons/chevron-right.svg" alt="" width={20} height={20} />
       </button>
