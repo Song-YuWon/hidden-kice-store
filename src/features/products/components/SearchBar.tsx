@@ -24,7 +24,7 @@ export function SearchBar({
           type="button"
           onClick={() => onChange("")}
           aria-label="검색어 지우기"
-          className="shrink-0"
+          className="shrink-0 cursor-pointer"
         >
           <Image src="/icons/x.svg" alt="" width={16} height={16} />
         </button>

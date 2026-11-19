@@ -22,8 +22,8 @@ export function FilterTabs({
             aria-pressed={value === filter}
             className={
               value === filter
-                ? "text-base font-semibold text-gray-800"
-                : "text-base font-semibold text-gray-300 transition-colors hover:text-gray-800"
+                ? "cursor-pointer text-base font-semibold text-gray-800"
+                : "cursor-pointer text-base font-semibold text-gray-300 transition-colors hover:text-gray-800"
             }
           >
             {filter}

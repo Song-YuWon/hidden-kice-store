@@ -29,7 +29,7 @@ export function PromoBanner() {
         type="button"
         onClick={() => setIndex((prev) => (prev + 1) % SLIDES.length)}
         aria-label="다음 배너 보기"
-        className="absolute bottom-[29px] right-[80px] flex items-center justify-center rounded-full bg-black/30 px-[10px] py-1 text-sm font-semibold text-white"
+        className="absolute bottom-[29px] right-[80px] flex cursor-pointer items-center justify-center rounded-full bg-black/30 px-[10px] py-1 text-sm font-semibold text-white"
       >
         {index + 1}
         <span className="font-medium">/{SLIDES.length}</span>
